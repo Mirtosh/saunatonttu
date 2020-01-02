@@ -1,10 +1,7 @@
 // libraries
 #include <MKRGSM.h>
-//#include <TMP36.h>
-
-// Please enter your sensitive data in the Secret tab or arduino_secrets.h
-// PIN Number
-
+#include <TMP36.h>
+#include <ThingSpeak.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -12,13 +9,20 @@
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 
-String apiKey = "BHZO61ZX9LLLAYIK";
-#define PINNUMBER      "0000"
+
+//----------------  Fill in your credentails   ---------------------
+unsigned long myChannelNumber = 224142;  // Replace the 0 with your channel number
+const char * myWriteAPIKey = "BHZO61ZX9LLLAYIK";    // Paste your ThingSpeak Write API Key between the quotes 
+//------------------------------------------------------------------
+
+
+
 
 // APN data
 #define GPRS_APN       "4g.tele2.se"
 #define GPRS_LOGIN     ""
 #define GPRS_PASSWORD  ""
+#define PINNUMBER      "0000"
 
 // initialize the library instance
 GPRS gprs;
@@ -73,15 +77,6 @@ void loop() {
     Serial.println("connection failed");
   }
 
-     //Get IP.
- //IPAddress LocalIP = gprs.getIPAddress();
- //Serial.println("Server IP address=");
- //Serial.println(LocalIP);
- 
- //
-
-
-
   GSMClient client;
   
 DS18B20.requestTemperatures();
@@ -98,28 +93,27 @@ DS18B20.requestTemperatures();
 //  }
  
   if (client.connect("api.thingspeak.com",80)) {  //   "184.106.153.149" or api.thingspeak.com
+  
+  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
+  // pieces of information in a channel.  Here, we write to field 1.
+  int x = ThingSpeak.writeField(myChannelNumber, 1, number, myWriteAPIKey);
+  
+  // Check the return code
+  if(x == 200){
+    Serial.println("Channel update successful.");
+  }
+  else{
+    Serial.println("Problem updating channel. HTTP error code " + String(x));
+  }
 
-    String postStr = apiKey;
-           postStr +="&field1=";
-        
-           postStr += String(t);
-           postStr += "\r\n\r\n";
- 
-     client.print("POST /update HTTP/1.1\n"); 
-     client.print("Host: api.thingspeak.com\n"); 
-     client.print("Connection: close\n"); 
-     client.print("X-THINGSPEAKAPIKEY: "+apiKey+"\n"); 
-     client.print("Content-Type: application/x-www-form-urlencoded\n"); 
-     client.print("Content-Length: "); 
-     client.print(postStr.length()); 
-     client.print("\n\n"); 
-     client.print(postStr);
-           
- 
-     Serial.print("Temperature: ");
-     Serial.print(t);
-     Serial.print(" degrees Celcius"); // Humidity: "); 
-     Serial.println(" send to Thingspeak");    
+  number++;
+  if(number > 99){
+    number = 0;
+  }
+  
+  delay(20000); // Wait 20 seconds before sending a new value
+}
+
   }
   client.stop();
    
