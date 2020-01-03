@@ -34,6 +34,9 @@ const unsigned long __TIMEOUT__ = 10 * 1000;
 void setup() {
   // initialize serial communications and wait for port to open:
   Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
     ThingSpeak.begin(client);
   }
 
@@ -69,15 +72,23 @@ void loop() {
     Serial.println("Failed to read from sensor!");
     return;
   }
+ 
+  ThingSpeak.setField(1, t);
+  ThingSpeak.setField(2, 33);
+  
+  //delay(10*1000);
+  
   // Write to ThingSpeak. 
+  
   if (client.connect("api.thingspeak.com",80)) {  //   "184.106.153.149" or api.thingspeak.com
-    int x = ThingSpeak.writeField(myChannelNumber, 1, t, myWriteAPIKey);
+    int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
     if(x == 200){   // Check the return code
       Serial.println("Channel update successful.");
       }
     else{
       Serial.println("Problem updating channel. HTTP error code " + String(x));
     }
+    
   }
   
 client.stop();
