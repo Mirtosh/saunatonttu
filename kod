@@ -34,80 +34,74 @@ const unsigned long __TIMEOUT__ = 10 * 1000;
 void setup() {}
 
 void loop() {
-	// initialize serial communications and wait for port to open:
-	Serial.begin(9600);
-	while (!Serial) {
-		; // wait for serial port to connect. Needed for native USB port only
+
+// initialize serial communications and wait for port to open:
+Serial.begin(9600);
+while (!Serial) {
+	; // wait for serial port to connect. Needed for native USB port only
+}
+
+Serial.println("Starting Arduino web client.");
+
+// connection state
+boolean connected = false;
+
+while (!connected) {
+	if ((gsmAccess.begin(PINNUMBER) == GSM_READY) &&
+		(gprs.attachGPRS("4g.tele2.se", "", "") == GPRS_READY)) {
+	connected = true;
+	} else {
+		Serial.println("Not connected");
+		delay(1000);
 		}
-	
-	Serial.println("Starting Arduino web client.");
-  
-	// connection state
-	boolean connected = false;
-	
-	while (!connected) {
-		if ((gsmAccess.begin(PINNUMBER) == GSM_READY) &&
-			(gprs.attachGPRS("4g.tele2.se", "", "") == GPRS_READY)) {
-      		connected = true;
-		} else {
-			Serial.println("Not connected");
-			delay(1000);
-			}
-  }
+}
 
-  Serial.println("Connecting...");
-  
-  // if you get a connection, report back via serial:
-  if (client.connect("api.thingspeak.com", 80)) {
-    Serial.println("connected");
-    // Make a HTTP request:
-    client.print("GET ");
-    client.print(path);
-    client.println(" HTTP/1.1");
-    client.print("Host: ");
-    client.println(server);
-    client.println("Connection: close");
-    client.println();
-  } else {
-    // if you didn't get a connection to the server:
-    Serial.println("connection failed");
-  }
+Serial.println("Connecting...");
 
-  GSMClient client;
-  
+// if you get a connection, report back via serial:
+if (client.connect("api.thingspeak.com", 80)) {
+	Serial.println("connected");
+	// Make a HTTP request:
+	client.print("GET ");
+	client.print(path);
+	client.println(" HTTP/1.1");
+	client.print("Host: ");
+	client.println(server);
+	client.println("Connection: close");
+	client.println();
+// if you didn't get a connection to the server:
+} else {
+Serial.println("connection failed");
+}
+
+GSMClient client;
+
 DS18B20.requestTemperatures();
-  float t = DS18B20.getTempCByIndex(0);
-  if (isnan(t)) {              
-    Serial.println("Failed to read from sensor!");
-    return;
-  }
+float t = DS18B20.getTempCByIndex(0);
 
-//  float t = myTMP36.getTempC();
-//  if (isnan(t)) {              
-//    Serial.println("Failed to read from sensor!");
-//    return;
-//  }
- 
-  if (client.connect("api.thingspeak.com",80)) {  //   "184.106.153.149" or api.thingspeak.com
-  
-  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
-  // pieces of information in a channel.  Here, we write to field 1.
-  int x = ThingSpeak.writeField(myChannelNumber, 1, number, myWriteAPIKey);
-  
-  // Check the return code
-  if(x == 200){
-    Serial.println("Channel update successful.");
-  }
-  else{
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
-  }
+if (isnan(t)) {
+	Serial.println("Failed to read from sensor!");
+	return;
+}
 
-  number++;
-  if(number > 99){
-    number = 0;
-  }
-  
-  
+if (client.connect("api.thingspeak.com",80)) {  //   "184.106.153.149" or api.thingspeak.com
+
+	// Write to ThingSpeak. 
+	int x = ThingSpeak.writeField(myChannelNumber, 1, number, myWriteAPIKey);
+
+	// Check the return code
+
+	if(x == 200){
+		Serial.println("Channel update successful.");
+		}
+	else{
+		Serial.println("Problem updating channel. HTTP error code " + String(x));
+	}
+
+	number++;
+	if(number > 99){
+		number = 0;
+	}
 }
 
   }
