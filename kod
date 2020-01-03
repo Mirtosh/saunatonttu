@@ -28,7 +28,7 @@ GSMClient client; // port 80 (http default)
 // timeout
 const unsigned long __TIMEOUT__ = 10 * 1000;
 
-//TMP36 myTMP36(A0, 3.3);
+TMP36 shortt(A0, 3.3);
 
 
 void setup() {
@@ -64,17 +64,17 @@ void loop() {
   
 
   GSMClient client;
-
+  float watert =shortt.getTempC()
   DS18B20.requestTemperatures();
-  float t = DS18B20.getTempCByIndex(0);
+  float saunat = DS18B20.getTempCByIndex(0);
 
-  if (isnan(t)) {
+  if (isnan(saunat)) {
     Serial.println("Failed to read from sensor!");
     return;
   }
  
-  ThingSpeak.setField(1, t);
-  ThingSpeak.setField(2, 33);
+  ThingSpeak.setField(1, saunat);
+  ThingSpeak.setField(2, watert);
   
   //delay(10*1000);
   
