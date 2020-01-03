@@ -94,14 +94,11 @@ void loop() {
 			Serial.println("Problem updating channel. HTTP error code " + String(x));
 		}
 	}
-
-}
+	
 client.stop();
+
 gsmAccess.shutdown();   
 
-Serial.println("Waiting...");    
- 
- 
-delay(5*60*1000);  // thingspeak needs minimum 15 sec delay between updates
-  
+Serial.println("Waiting...");
+delay(5*60*1000);  // thingspeak needs minimum 15 sec delay between updates  
 }
