@@ -34,9 +34,9 @@ TMP36 shortt(A0, 3.3);
 void setup() {
   // initialize serial communications and wait for port to open:
   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+//  while (!Serial) {
+//    ; // wait for serial port to connect. Needed for native USB port only
+//  }
     ThingSpeak.begin(client);
   }
 
@@ -64,7 +64,7 @@ void loop() {
   
 
   GSMClient client;
-  float watert =shortt.getTempC()
+  float watert =shortt.getTempC();
   DS18B20.requestTemperatures();
   float saunat = DS18B20.getTempCByIndex(0);
 
@@ -96,5 +96,5 @@ client.stop();
 gsmAccess.shutdown();   
 
 Serial.println("Waiting...");
-delay(20*1000);  // thingspeak needs minimum 15 sec delay between updates  
+delay(5*60*1000);  // thingspeak needs minimum 15 sec delay between updates  
 }
